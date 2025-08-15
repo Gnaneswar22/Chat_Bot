@@ -11,20 +11,17 @@ export async function POST(request: NextRequest) {
 
     const { messages, model } = await request.json()
 
-    const envApiKey = process.env.OPENROUTER_API_KEY
-    const realApiKey = "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"
-
-    // Use real API key if env key is placeholder or missing
-    const apiKey =
-      !envApiKey || envApiKey.includes("your_") || envApiKey.includes("openrouter_api_key") ? realApiKey : envApiKey
+    const apiKey = process.env.OPENROUTER_API_KEY
 
     console.log("[v0] API Key available:", !!apiKey)
-    console.log("[v0] API Key first 8 chars:", apiKey?.substring(0, 8) + "...")
+    console.log("[v0] API Key first 8 chars:", apiKey ? apiKey.substring(0, 8) + "..." : "NOT SET")
     console.log("[v0] Authenticated user:", userEmail)
 
     if (!apiKey) {
-      console.error("[v0] OPENROUTER_API_KEY is not set")
-      return NextResponse.json({ error: "API key not configured" }, { status: 500 })
+      console.error("[v0] OPENROUTER_API_KEY environment variable is not set")
+      return NextResponse.json({ 
+        error: "OpenRouter API key not configured. Please set OPENROUTER_API_KEY environment variable." 
+      }, { status: 500 })
     }
 
     const modelName = model || "deepseek/deepseek-r1-distill-llama-70b"
@@ -53,7 +50,7 @@ export async function POST(request: NextRequest) {
       if (response.status === 401) {
         return NextResponse.json(
           {
-            error: "Authentication failed. Please check your OpenRouter API key.",
+            error: "OpenRouter API authentication failed. Please check your API key is valid and not expired.",
           },
           { status: 401 },
         )
